@@ -58,7 +58,7 @@ function LoginPage() {
     login(role, identifier, password);
   }
 
-  function useDemo(r: Role) {
+  function loginAsDemo(r: Role) {
     setRole(r);
     setIdentifier(demo[r]);
     setPassword("campus-demo");
@@ -133,7 +133,7 @@ function LoginPage() {
           <p className="mt-5 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">Demo login option</p>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {(["student", "faculty", "admin"] as Role[]).map((r) => (
-              <button key={r} type="button" disabled={loading} onClick={() => useDemo(r)} className="h-9 rounded-full border border-border bg-card text-sm font-medium capitalize text-foreground shadow-sm hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <button key={r} type="button" disabled={loading} onClick={() => loginAsDemo(r)} className="h-9 rounded-full border border-border bg-card text-sm font-medium capitalize text-foreground shadow-sm hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {r}
               </button>
             ))}

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_portal/planner")({
 
 interface Item { id: string; type: "Assignment" | "Exam"; title: string; subject: string; due: string }
 const initial: Item[] = [
-  ...[assignments[4], assignments[2], assignments[3]].map((a) => ({ id: a.id, type: "Assignment" as const, title: a.title, subject: a.shortSubject, due: a.due })),
+  ...[assignments[4]!, assignments[2]!, assignments[3]!].map((a) => ({ id: a.id, type: "Assignment" as const, title: a.title, subject: a.shortSubject, due: a.due })),
   ...exams.map((e, i) => ({ id: `x${i}`, type: "Exam" as const, title: `${e.subject} ${e.type === "Practical" ? "Practical" : "Mid Semester"}`, subject: e.subject, due: `${e.date} ${e.time}` })),
 ];
 const field = "h-10 w-full rounded-xl border border-input bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive";
@@ -24,7 +24,7 @@ function Planner() {
   const ask = useServerFn(askAssistant);
   const [items, setItems] = useState(initial);
   const [form, setForm] = useState({ type: "Assignment" as Item["type"], date: "", title: "", subject: "" });
-  const [errs, setErrs] = useState<Record<string, string>>({});
+  const [errs, setErrs] = useState<{ title?: string; subject?: string; date?: string }>({});
   const [hours, setHours] = useState(3);
   const [plan, setPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ function Planner() {
 
   function add(e: FormEvent) {
     e.preventDefault();
-    const er: Record<string, string> = {};
+    const er: { title?: string; subject?: string; date?: string } = {};
     if (!form.title.trim()) er.title = "Title is required.";
     if (!form.subject.trim()) er.subject = "Subject is required.";
     if (!form.date) er.date = "Pick a date.";

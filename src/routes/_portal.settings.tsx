@@ -34,7 +34,7 @@ function SettingsPage() {
             <p id={`s-${name}`} className="font-semibold text-foreground">{name}</p>
             <p className="mt-1 text-sm text-muted-foreground">Account, notifications, privacy, appearance and assistant preference settings.</p>
           </div>
-          <Switch aria-labelledby={`s-${name}`} checked={state[name]} onCheckedChange={(v) => toggle(name, v)} />
+          <Switch aria-labelledby={`s-${name}`} checked={!!state[name]} onCheckedChange={(v) => toggle(name, v)} />
         </Panel>
       ))}
     </div>

@@ -16,7 +16,7 @@ export const askAssistant = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }): Promise<AssistantResult> => {
-    const url = process.env.N8N_WEBHOOK_URL;
+    const url = process.env['N8N_WEBHOOK_URL'];
     if (!url) {
       return {
         ok: false,

@@ -12,9 +12,9 @@ const toneClass: Record<Tone, string> = {
   muted: "bg-secondary text-secondary-foreground",
 };
 
-export function Pill({ tone = "muted", children, className }: { tone?: Tone; children: ReactNode; className?: string }) {
+export function Pill({ tone = "muted", children, className }: { tone?: Tone | undefined; children: ReactNode; className?: string | undefined }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap", toneClass[tone], className)}>
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap", toneClass[tone ?? "muted"], className)}>
       {children}
     </span>
   );

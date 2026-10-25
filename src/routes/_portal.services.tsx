@@ -30,7 +30,7 @@ function Services() {
     <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {services.map((s, i) => {
-          const Icon = icons[i];
+          const Icon = icons[i] ?? BookOpen;
           return (
             <Panel key={s.name} className="flex flex-col">
               <IconBubble><Icon /></IconBubble>

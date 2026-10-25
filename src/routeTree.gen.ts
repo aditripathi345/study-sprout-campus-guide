@@ -10,33 +10,202 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalRouteImport } from './routes/_portal'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PortalAssignmentsRouteImport } from './routes/_portal.assignments'
+import { Route as PortalAssistantRouteImport } from './routes/_portal.assistant'
+import { Route as PortalAttendanceRouteImport } from './routes/_portal.attendance'
+import { Route as PortalDashboardRouteImport } from './routes/_portal.dashboard'
+import { Route as PortalEventsRouteImport } from './routes/_portal.events'
+import { Route as PortalExamsRouteImport } from './routes/_portal.exams'
+import { Route as PortalNoticesRouteImport } from './routes/_portal.notices'
+import { Route as PortalPlannerRouteImport } from './routes/_portal.planner'
+import { Route as PortalProfileRouteImport } from './routes/_portal.profile'
+import { Route as PortalServicesRouteImport } from './routes/_portal.services'
+import { Route as PortalSettingsRouteImport } from './routes/_portal.settings'
+import { Route as PortalTimetableRouteImport } from './routes/_portal.timetable'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/_portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalAssignmentsRoute = PortalAssignmentsRouteImport.update({
+  id: '/assignments',
+  path: '/assignments',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalAssistantRoute = PortalAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalAttendanceRoute = PortalAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDashboardRoute = PortalDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalEventsRoute = PortalEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalExamsRoute = PortalExamsRouteImport.update({
+  id: '/exams',
+  path: '/exams',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalNoticesRoute = PortalNoticesRouteImport.update({
+  id: '/notices',
+  path: '/notices',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalPlannerRoute = PortalPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalProfileRoute = PortalProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalServicesRoute = PortalServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalSettingsRoute = PortalSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalTimetableRoute = PortalTimetableRouteImport.update({
+  id: '/timetable',
+  path: '/timetable',
+  getParentRoute: () => PortalRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/assignments': typeof PortalAssignmentsRoute
+  '/assistant': typeof PortalAssistantRoute
+  '/attendance': typeof PortalAttendanceRoute
+  '/dashboard': typeof PortalDashboardRoute
+  '/events': typeof PortalEventsRoute
+  '/exams': typeof PortalExamsRoute
+  '/notices': typeof PortalNoticesRoute
+  '/planner': typeof PortalPlannerRoute
+  '/profile': typeof PortalProfileRoute
+  '/services': typeof PortalServicesRoute
+  '/settings': typeof PortalSettingsRoute
+  '/timetable': typeof PortalTimetableRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/assignments': typeof PortalAssignmentsRoute
+  '/assistant': typeof PortalAssistantRoute
+  '/attendance': typeof PortalAttendanceRoute
+  '/dashboard': typeof PortalDashboardRoute
+  '/events': typeof PortalEventsRoute
+  '/exams': typeof PortalExamsRoute
+  '/notices': typeof PortalNoticesRoute
+  '/planner': typeof PortalPlannerRoute
+  '/profile': typeof PortalProfileRoute
+  '/services': typeof PortalServicesRoute
+  '/settings': typeof PortalSettingsRoute
+  '/timetable': typeof PortalTimetableRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_portal': typeof PortalRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_portal/assignments': typeof PortalAssignmentsRoute
+  '/_portal/assistant': typeof PortalAssistantRoute
+  '/_portal/attendance': typeof PortalAttendanceRoute
+  '/_portal/dashboard': typeof PortalDashboardRoute
+  '/_portal/events': typeof PortalEventsRoute
+  '/_portal/exams': typeof PortalExamsRoute
+  '/_portal/notices': typeof PortalNoticesRoute
+  '/_portal/planner': typeof PortalPlannerRoute
+  '/_portal/profile': typeof PortalProfileRoute
+  '/_portal/services': typeof PortalServicesRoute
+  '/_portal/settings': typeof PortalSettingsRoute
+  '/_portal/timetable': typeof PortalTimetableRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/assignments'
+    | '/assistant'
+    | '/attendance'
+    | '/dashboard'
+    | '/events'
+    | '/exams'
+    | '/notices'
+    | '/planner'
+    | '/profile'
+    | '/services'
+    | '/settings'
+    | '/timetable'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/assignments'
+    | '/assistant'
+    | '/attendance'
+    | '/dashboard'
+    | '/events'
+    | '/exams'
+    | '/notices'
+    | '/planner'
+    | '/profile'
+    | '/services'
+    | '/settings'
+    | '/timetable'
+  id:
+    | '__root__'
+    | '/'
+    | '/_portal'
+    | '/login'
+    | '/_portal/assignments'
+    | '/_portal/assistant'
+    | '/_portal/attendance'
+    | '/_portal/dashboard'
+    | '/_portal/events'
+    | '/_portal/exams'
+    | '/_portal/notices'
+    | '/_portal/planner'
+    | '/_portal/profile'
+    | '/_portal/services'
+    | '/_portal/settings'
+    | '/_portal/timetable'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PortalRoute: typeof PortalRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +217,144 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_portal': {
+      id: '/_portal'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PortalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_portal/assignments': {
+      id: '/_portal/assignments'
+      path: '/assignments'
+      fullPath: '/assignments'
+      preLoaderRoute: typeof PortalAssignmentsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/assistant': {
+      id: '/_portal/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof PortalAssistantRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/attendance': {
+      id: '/_portal/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof PortalAttendanceRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/dashboard': {
+      id: '/_portal/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/events': {
+      id: '/_portal/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof PortalEventsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/exams': {
+      id: '/_portal/exams'
+      path: '/exams'
+      fullPath: '/exams'
+      preLoaderRoute: typeof PortalExamsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/notices': {
+      id: '/_portal/notices'
+      path: '/notices'
+      fullPath: '/notices'
+      preLoaderRoute: typeof PortalNoticesRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/planner': {
+      id: '/_portal/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof PortalPlannerRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/profile': {
+      id: '/_portal/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof PortalProfileRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/services': {
+      id: '/_portal/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof PortalServicesRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/settings': {
+      id: '/_portal/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof PortalSettingsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/_portal/timetable': {
+      id: '/_portal/timetable'
+      path: '/timetable'
+      fullPath: '/timetable'
+      preLoaderRoute: typeof PortalTimetableRouteImport
+      parentRoute: typeof PortalRoute
+    }
   }
 }
 
+interface PortalRouteChildren {
+  PortalAssignmentsRoute: typeof PortalAssignmentsRoute
+  PortalAssistantRoute: typeof PortalAssistantRoute
+  PortalAttendanceRoute: typeof PortalAttendanceRoute
+  PortalDashboardRoute: typeof PortalDashboardRoute
+  PortalEventsRoute: typeof PortalEventsRoute
+  PortalExamsRoute: typeof PortalExamsRoute
+  PortalNoticesRoute: typeof PortalNoticesRoute
+  PortalPlannerRoute: typeof PortalPlannerRoute
+  PortalProfileRoute: typeof PortalProfileRoute
+  PortalServicesRoute: typeof PortalServicesRoute
+  PortalSettingsRoute: typeof PortalSettingsRoute
+  PortalTimetableRoute: typeof PortalTimetableRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalAssignmentsRoute: PortalAssignmentsRoute,
+  PortalAssistantRoute: PortalAssistantRoute,
+  PortalAttendanceRoute: PortalAttendanceRoute,
+  PortalDashboardRoute: PortalDashboardRoute,
+  PortalEventsRoute: PortalEventsRoute,
+  PortalExamsRoute: PortalExamsRoute,
+  PortalNoticesRoute: PortalNoticesRoute,
+  PortalPlannerRoute: PortalPlannerRoute,
+  PortalProfileRoute: PortalProfileRoute,
+  PortalServicesRoute: PortalServicesRoute,
+  PortalSettingsRoute: PortalSettingsRoute,
+  PortalTimetableRoute: PortalTimetableRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PortalRoute: PortalRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

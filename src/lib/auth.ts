@@ -31,6 +31,8 @@ export function clearSession() {
 /** undefined while hydrating, null when signed out. */
 export function useSession() {
   const [s, setS] = useState<Session | null | undefined>(undefined);
-  useEffect(() => setS(getSession()), []);
+  useEffect(() => {
+    setS(getSession());
+  }, []);
   return s;
 }

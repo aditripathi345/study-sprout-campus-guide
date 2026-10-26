@@ -22,7 +22,9 @@ function AssistantPage() {
   const [error, setError] = useState<{ text: string; prompt: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), [messages, loading, error]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, loading, error]);
 
   async function send(text: string, retry = false) {
     const prompt = text.trim();

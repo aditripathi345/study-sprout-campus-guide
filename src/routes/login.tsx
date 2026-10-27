@@ -3,13 +3,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/portal/ui";
-import { setSession, type Role } from "@/lib/auth";
+import { useServerFn } from "@tanstack/react-start";
+import { setSession } from "@/lib/auth";
+import { loginRequest, meRequest } from "@/lib/assistant.functions";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Login — AI Campus Assistant" },
-      { name: "description", content: "Sign in to AI Campus Assistant as a student, faculty member or admin." },
+      { name: "description", content: "Sign in to AI Campus Assistant with your campus account." },
       { property: "og:title", content: "Login — AI Campus Assistant" },
       { property: "og:description", content: "A premium campus portal for academic life." },
       { property: "og:type", content: "website" },
@@ -19,50 +21,43 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-const demo: Record<Role, string> = {
-  student: "devagya.tripathi@srmist.edu.in",
-  faculty: "meera.sharma@srmist.edu.in",
-  admin: "admin@srmist.edu.in",
-};
-
 const inputCls = "flex h-11 w-full rounded-xl border border-input bg-card pl-9 pr-3 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<Role>("student");
-  const [identifier, setIdentifier] = useState(demo.student);
-  const [password, setPassword] = useState("campus-demo");
+  const doLogin = useServerFn(loginRequest);
+  const doMe = useServerFn(meRequest);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
-  const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ identifier?: string; password?: string; form?: string }>({});
   const [loading, setLoading] = useState(false);
 
-  function login(r: Role, id: string, pw: string) {
+  async function onSubmit(ev: FormEvent) {
+    ev.preventDefault();
+    if (loading) return;
     const e: typeof errors = {};
-    const v = id.trim();
-    if (!v) e.identifier = "Enter your email or registration number.";
-    else if (v.includes("@") ? !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) : !/^[A-Za-z0-9]{6,}$/.test(v))
-      e.identifier = "Enter a valid email or registration number.";
-    if (pw.length < 6) e.password = "Password must be at least 6 characters.";
+    const v = identifier.trim();
+    if (!v) e.identifier = "Enter your email.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) e.identifier = "Enter a valid email address.";
+    if (!password) e.password = "Enter your password.";
     setErrors(e);
     if (Object.keys(e).length) return;
     setLoading(true);
-    setTimeout(() => {
-      setSession({ role: r, identifier: v }, remember);
-      toast.success(`Logged in as ${r}`);
+    try {
+      const res = await doLogin({ data: { email: v, password } });
+      if (!res.ok) { setErrors({ form: res.error }); return; }
+      const me = await doMe({ data: { token: res.token } });
+      if (!me.ok) { setErrors({ form: me.status === 0 ? me.error : "Signed in, but your account could not be verified. Please try again." }); return; }
+      setSession({ token: res.token, user: me.user }, remember);
+      setPassword("");
+      toast.success(`Welcome, ${me.user.name}`);
       navigate({ to: "/dashboard" });
-    }, 500);
-  }
-
-  function onSubmit(ev: FormEvent) {
-    ev.preventDefault();
-    login(role, identifier, password);
-  }
-
-  function loginAsDemo(r: Role) {
-    setRole(r);
-    setIdentifier(demo[r]);
-    setPassword("campus-demo");
-    login(r, demo[r], "campus-demo");
+    } catch {
+      setErrors({ form: "Could not reach the campus server. Please try again." });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -74,7 +69,7 @@ function LoginPage() {
         <div>
           <Logo size="lg" />
           <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-foreground">A premium campus portal for academic life.</h1>
-          <p className="mt-4 max-w-md text-muted-foreground">Mock JWT-ready authentication separates Student, Faculty and Admin dashboards for a realistic APP demonstration.</p>
+          <p className="mt-4 max-w-md text-muted-foreground">Sign in with your campus account. Your identity and role are verified by the campus server.</p>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {["JWT Ready", "MongoDB Ready", "Gemini Ready"].map((t) => (
@@ -94,18 +89,12 @@ function LoginPage() {
             <p className="mt-1 text-sm text-muted-foreground">Sign in to AI Campus Assistant</p>
           </div>
 
-          <label htmlFor="role" className="mt-6 block text-sm font-medium text-foreground">Role</label>
-          <select id="role" value={role} onChange={(e) => { const r = e.target.value as Role; setRole(r); setIdentifier(demo[r]); }}
-            className="mt-2 h-9 w-full rounded-xl border border-input bg-card px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <option value="student">Student</option>
-            <option value="faculty">Faculty</option>
-            <option value="admin">Admin</option>
-          </select>
+          {errors.form && <p role="alert" className="mt-6 rounded-xl border border-destructive/30 bg-destructive-soft p-3 text-sm text-destructive">{errors.form}</p>}
 
-          <label htmlFor="identifier" className="mt-4 block text-sm font-medium text-foreground">Email / Registration Number</label>
+          <label htmlFor="identifier" className="mt-4 block text-sm font-medium text-foreground">Email</label>
           <div className="relative mt-2">
             <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input id="identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} aria-invalid={!!errors.identifier} aria-describedby="identifier-err" className={inputCls} autoComplete="username" />
+            <input id="identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} aria-invalid={!!errors.identifier} aria-describedby="identifier-err" type="email" placeholder="you@srmist.edu.in" className={inputCls} autoComplete="username" />
           </div>
           {errors.identifier && <p id="identifier-err" className="mt-1 text-xs text-destructive">{errors.identifier}</p>}
 
@@ -130,14 +119,6 @@ function LoginPage() {
             {loading ? "Signing in…" : "Login"}
           </button>
 
-          <p className="mt-5 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">Demo login option</p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            {(["student", "faculty", "admin"] as Role[]).map((r) => (
-              <button key={r} type="button" disabled={loading} onClick={() => loginAsDemo(r)} className="h-9 rounded-full border border-border bg-card text-sm font-medium capitalize text-foreground shadow-sm hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                {r}
-              </button>
-            ))}
-          </div>
         </form>
       </main>
     </div>

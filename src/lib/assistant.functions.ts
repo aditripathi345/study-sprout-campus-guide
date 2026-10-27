@@ -71,7 +71,7 @@ export const meRequest = createServerFn({ method: "POST" })
   .inputValidator(z.object({ token: z.string().min(10).max(4000) }))
   .handler(async ({ data }): Promise<MeResult> => {
     const r = await callN8n({ action: "me" }, data.token);
-    if (!r.ok) return { ok: false, status: r.status, error: r.error };
+    if (!r.ok) return { ok: false, status: r.status, error: r.error ?? "Request failed." };
     const user = pickUser(r.json);
     return user ? { ok: true, user } : { ok: false, status: 401, error: "Could not verify your session." };
   });
@@ -90,7 +90,7 @@ export const askAssistant = createServerFn({ method: "POST" })
       { action: "chat", message: data.message, mode: data.mode, ...(data.conversationId ? { conversationId: data.conversationId } : {}) },
       data.token,
     );
-    if (!r.ok) return { ok: false, status: r.status, error: r.error };
+    if (!r.ok) return { ok: false, status: r.status, error: r.error ?? "Request failed." };
     const o = r.json;
     const reply = o ? (o.reply ?? o.output ?? o.response ?? o.answer ?? o.message ?? o.text ?? o.data?.reply) : r.text;
     if (!reply || !String(reply).trim()) return { ok: false, error: "The assistant returned an empty response." };

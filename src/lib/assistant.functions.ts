@@ -1,12 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-export type AssistantResult = { ok: true; reply: string; conversationId?: string } | { ok: false; error: string; status?: number };
+export type AssistantResult = { ok: true; reply: string; conversationId?: string | undefined } | { ok: false; error: string; status?: number | undefined };
 export interface CampusUser { id: string; name: string; email: string; role: string }
-export type LoginResult = { ok: true; token: string; user: CampusUser } | { ok: false; error: string; status?: number };
-export type MeResult = { ok: true; user: CampusUser } | { ok: false; error: string; status?: number };
+export type LoginResult = { ok: true; token: string; user: CampusUser } | { ok: false; error: string; status?: number | undefined };
+export type MeResult = { ok: true; user: CampusUser } | { ok: false; error: string; status?: number | undefined };
 
 const statusMessage: Record<number, string> = {
+  404: "The campus server isn't accepting requests right now (the n8n workflow may be inactive).",
   400: "The request was not valid. Please check your input.",
   401: "Your session has expired or is invalid. Please sign in again.",
   403: "You don't have permission to do that.",

@@ -10,8 +10,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Logo, Pill, SampleBadge } from "@/components/portal/ui";
-import { clearSession, useSession } from "@/lib/auth";
-import { notices, priorityTone, student } from "@/lib/demo-data";
+import { useServerFn } from "@tanstack/react-start";
+import { clearSession, getStoredSession, initials, markVerified, type Session } from "@/lib/auth";
+import { meRequest } from "@/lib/assistant.functions";
+import { notices, priorityTone } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_portal")({ component: PortalLayout });
@@ -66,20 +68,51 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function PortalLayout() {
-  const session = useSession();
+  const [session, setSessionState] = useState<Session | null>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const verifyMe = useServerFn(meRequest);
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    if (session === null) navigate({ to: "/login", replace: true });
-  }, [session, navigate]);
+    const stored = getStoredSession();
+    if (!stored) { navigate({ to: "/login", replace: true }); return; }
+    let cancelled = false;
+    verifyMe({ data: { token: stored.token } })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) {
+          const s = { token: stored.token, user: res.user };
+          markVerified(s);
+          setSessionState(s);
+        } else if (res.status === 0 || (res.status ?? 0) >= 500) {
+          setVerifyError(res.error);
+        } else {
+          clearSession();
+          toast.error("Your session has expired. Please sign in again.");
+          navigate({ to: "/login", replace: true });
+        }
+      })
+      .catch(() => !cancelled && setVerifyError("Could not reach the campus server."));
+    return () => { cancelled = true; };
+  }, [navigate, verifyMe]);
 
   if (!session) {
     return (
-      <div className="grid min-h-screen place-items-center bg-app" role="status">
-        <p className="text-sm text-muted-foreground">Loading your portal…</p>
+      <div className="grid min-h-screen place-items-center bg-app p-4" role="status">
+        {verifyError ? (
+          <div className="text-center">
+            <p className="text-sm text-destructive">{verifyError}</p>
+            <div className="mt-3 flex justify-center gap-2">
+              <button onClick={() => window.location.reload()} className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Retry</button>
+              <button onClick={() => { clearSession(); navigate({ to: "/login" }); }} className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium">Sign in again</button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Verifying your session…</p>
+        )}
       </div>
     );
   }
@@ -99,8 +132,9 @@ function PortalLayout() {
 
   function logout() {
     clearSession();
+    setSessionState(null);
     toast.success("Logged out");
-    navigate({ to: "/login" });
+    navigate({ to: "/login", replace: true });
   }
 
   return (
@@ -152,14 +186,14 @@ function PortalLayout() {
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger aria-label="Open profile menu" className="flex items-center gap-3 rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <span className="grid size-9 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{student.initials}</span>
+                  <span className="grid size-9 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(session.user.name)}</span>
                   <span className="hidden text-left xl:block">
-                    <span className="block text-sm font-semibold text-foreground">{student.name}</span>
-                    <span className="block text-xs capitalize text-muted-foreground">{session.role}</span>
+                    <span className="block text-sm font-semibold text-foreground">{session.user.name}</span>
+                    <span className="block text-xs capitalize text-muted-foreground">{session.user.role}</span>
                   </span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Logged in as {session.role}</DropdownMenuLabel>
+                  <DropdownMenuLabel>Logged in as {session.user.role}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={() => navigate({ to: "/profile" })}><UserCircle className="size-4" /> Profile</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}><Settings className="size-4" /> Settings</DropdownMenuItem>

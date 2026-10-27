@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bot, CalendarDays, ChevronRight, CircleCheck, ClipboardCheck, Clock, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { IconBubble, Panel, PanelHeader, Pill, SampleBadge } from "@/components/portal/ui";
+import { useSession } from "@/lib/auth";
 import { assignments, events, notices, priorityTone, statusTone, student, timetable } from "@/lib/demo-data";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ const cards = [
 ] as const;
 
 function Dashboard() {
+  const session = useSession();
   const today = timetable.filter((c) => c.day === "Monday");
   const deadlines = assignments.filter((a) => a.status === "Pending").sort((a, b) => a.order - b.order);
   const [rsvp, setRsvp] = useState<Record<string, boolean>>({});
@@ -29,7 +31,7 @@ function Dashboard() {
       <Panel className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <SampleBadge />
-          <h2 className="mt-2 text-3xl font-bold text-foreground">Good Morning, {student.firstName} 👋</h2>
+          <h2 className="mt-2 text-3xl font-bold text-foreground">Good Morning, {session?.user.name.split(" ")[0] ?? student.firstName} 👋</h2>
           <p className="mt-2 text-muted-foreground">Here's your academic overview for today.</p>
         </div>
         <AskButton />

@@ -6,6 +6,7 @@ import { Panel, PanelHeader } from "@/components/portal/ui";
 import { askAssistant } from "@/lib/assistant.functions";
 import { quickPrompts } from "@/lib/demo-data";
 import { pageHead } from "@/lib/seo";
+import { getToken } from "@/lib/auth";
 
 export const Route = createFileRoute("/_portal/assistant")({
   head: () => pageHead("AI Assistant", "Ask the AI Campus Assistant about your timetable, exams, assignments, notices and campus services."),
@@ -19,6 +20,7 @@ function AssistantPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | undefined>();
   const [error, setError] = useState<{ text: string; prompt: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -34,8 +36,13 @@ function AssistantPage() {
     setInput("");
     setLoading(true);
     try {
-      const res = await ask({ data: { message: prompt, mode: "chat" } });
-      if (res.ok) setMessages((m) => [...m, { role: "assistant", text: res.reply }]);
+      const token = getToken();
+      if (!token) { setError({ text: "Please sign in again to use the assistant.", prompt }); return; }
+      const res = await ask({ data: { token, message: prompt, mode: "chat", conversationId } });
+      if (res.ok) {
+        setMessages((m) => [...m, { role: "assistant", text: res.reply }]);
+        if (res.conversationId) setConversationId(res.conversationId);
+      }
       else setError({ text: res.error, prompt });
     } catch {
       setError({ text: "Something went wrong while contacting the assistant.", prompt });
@@ -62,7 +69,7 @@ function AssistantPage() {
               <p className="text-sm text-muted-foreground">Ask anything about your campus</p>
             </div>
           </div>
-          <button onClick={() => { setMessages([]); setError(null); }} disabled={!messages.length && !error}
+          <button onClick={() => { setMessages([]); setError(null); setConversationId(undefined); }} disabled={!messages.length && !error}
             className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-secondary disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <X className="size-4" /> <span className="hidden sm:inline">Clear conversation</span>
           </button>

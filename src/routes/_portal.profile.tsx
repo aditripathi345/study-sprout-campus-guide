@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Panel, PanelHeader, Pill } from "@/components/portal/ui";
-import { useSession } from "@/lib/auth";
+import { initials, useSession } from "@/lib/auth";
 import { student } from "@/lib/demo-data";
 import { pageHead } from "@/lib/seo";
 
@@ -27,18 +27,18 @@ function Profile() {
   return (
     <div className="space-y-6">
       <Panel className="flex items-center gap-4">
-        <span className="grid size-16 place-items-center rounded-full bg-primary-soft text-xl font-bold text-primary">{student.initials}</span>
+        <span className="grid size-16 place-items-center rounded-full bg-primary-soft text-xl font-bold text-primary">{initials(session?.user.name ?? student.name)}</span>
         <div>
-          <p className="text-xl font-bold text-foreground">{student.name}</p>
-          <p className="text-sm text-muted-foreground">{student.regNo}</p>
-          <Pill tone="primary" className="mt-2 capitalize">{session?.role ?? "student"}</Pill>
+          <p className="text-xl font-bold text-foreground">{session?.user.name ?? student.name}</p>
+          <p className="text-sm text-muted-foreground">{session?.user.id || student.regNo}</p>
+          <Pill tone="primary" className="mt-2 capitalize">{session?.user.role ?? "student"}</Pill>
         </div>
       </Panel>
       <div className="grid gap-6 lg:grid-cols-2">
-        <Info title="Personal Information" rows={[["Name", student.name], ["Email", student.email], ["Phone", student.phone], ["Campus", student.campus]]} />
+        <Info title="Personal Information" rows={[["Name", session?.user.name ?? student.name], ["Email", session?.user.email ?? student.email], ["Phone", student.phone], ["Campus", student.campus]]} />
         <Info title="Academic Information" rows={[["Program", student.program], ["Year", student.year], ["Section", student.section], ["Registration Number", student.regNo]]} />
       </div>
-      <Info title="Account Settings" rows={[["Authentication", "Mock JWT-ready session"], ["Access Role", session?.role ?? "student"], ["Status", "Active demo account"]]} />
+      <Info title="Account Settings" rows={[["Authentication", "Verified by campus server"], ["Access Role", session?.user.role ?? "student"], ["Status", "Active"]]} />
     </div>
   );
 }

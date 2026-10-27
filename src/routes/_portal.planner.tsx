@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { AlertCircle, CalendarClock, Loader2, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState, Panel, PanelHeader, Pill } from "@/components/portal/ui";
+import { getToken } from "@/lib/auth";
 import { askAssistant } from "@/lib/assistant.functions";
 import { assignments, exams } from "@/lib/demo-data";
 import { pageHead } from "@/lib/seo";
@@ -49,7 +50,9 @@ function Planner() {
     setLoading(true); setError(null); setPlan(null);
     const prompt = `Create a prioritized study plan for ${hours} study hours per day covering:\n` + items.map((i) => `- ${i.type}: ${i.title} (${i.subject}) due ${i.due}`).join("\n");
     try {
-      const res = await ask({ data: { message: prompt, mode: "study-plan" } });
+      const token = getToken();
+      if (!token) throw new Error("signed out");
+      const res = await ask({ data: { token, message: prompt, mode: "study-plan" } });
       if (res.ok) setPlan(res.reply); else setError(res.error);
     } catch {
       setError("Something went wrong while generating the plan.");

@@ -21,6 +21,7 @@ const cards = [
 ] as const;
 
 function Dashboard() {
+  const session = useSession();
   const today = timetable.filter((c) => c.day === "Monday");
   const deadlines = assignments.filter((a) => a.status === "Pending").sort((a, b) => a.order - b.order);
   const [rsvp, setRsvp] = useState<Record<string, boolean>>({});

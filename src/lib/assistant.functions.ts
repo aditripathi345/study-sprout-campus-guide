@@ -21,7 +21,7 @@ async function callN8n(body: Record<string, unknown>, token?: string) {
   if (!url) return { ok: false as const, status: 0, error: "The campus backend is not configured yet." };
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (token) headers.Authorization = `Bearer ${token}`;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
     const text = await res.text();
     let json: any = null;
@@ -56,7 +56,7 @@ export const loginRequest = createServerFn({ method: "POST" })
     const r = await callN8n({ action: "login", email: data.email, password: data.password });
     if (!r.ok) {
       if (r.status === 401 || r.status === 403 || r.status === 400) return { ok: false, status: r.status, error: "Invalid email or password." };
-      return { ok: false, status: r.status, error: r.error };
+      return { ok: false, status: r.status, error: r.error ?? "Request failed." };
     }
     const j = r.json;
     const token = j?.token ?? j?.access_token ?? j?.accessToken ?? j?.data?.token ?? j?.data?.access_token;

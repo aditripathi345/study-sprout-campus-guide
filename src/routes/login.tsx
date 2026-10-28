@@ -48,7 +48,8 @@ function LoginPage() {
       const res = await doLogin({ data: { email: v, password } });
       if (!res.ok) { setErrors({ form: res.error }); return; }
       const me = await doMe({ data: { token: res.token } });
-      if (!me.ok) { setErrors({ form: me.status === 0 ? me.error : "Signed in, but your account could not be verified. Please try again." }); return; }
+      if (!me.ok) { const why = me.status === 401 || me.status === 403 ? "the server rejected the access token (" + me.status + ")" : me.status === 0 ? "a network error" : (me.status ?? 0) >= 500 && me.status !== 502 ? "a server error (" + me.status + ")" : me.error;
+        setErrors({ form: `Signed in, but account verification failed: ${why}` }); return; }
       setSession({ token: res.token, user: me.user }, remember);
       setPassword("");
       toast.success(`Welcome, ${me.user.name}`);

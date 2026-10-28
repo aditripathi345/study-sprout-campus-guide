@@ -28,7 +28,7 @@ function unwrap(j: any): any {
 }
 
 async function callN8n(body: Record<string, unknown>, token?: string) {
-  const url = process.env["N8N_WEBHOOK_URL"];
+  const url = "https://aditri003.app.n8n.cloud/webhook/api/campus-buddy";
   if (!url) return { ok: false as const, status: 0, error: "The campus backend is not configured yet." };
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };

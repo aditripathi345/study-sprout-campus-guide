@@ -16,6 +16,17 @@ const statusMessage: Record<number, string> = {
 };
 
 /** Calls the n8n unified API (URL kept server-side in N8N_WEBHOOK_URL). */
+function devLog(action: unknown, info: Record<string, unknown>) {
+  if (process.env["NODE_ENV"] !== "production") console.info(`[n8n:${String(action)}]`, info);
+}
+
+/** Unwraps arrays and API-level `data` envelopes ({ success, data: {...} }). */
+function unwrap(j: any): any {
+  let o = Array.isArray(j) ? j[0] : j;
+  if (o && typeof o === "object" && o.json && typeof o.json === "object") o = o.json;
+  return o;
+}
+
 async function callN8n(body: Record<string, unknown>, token?: string) {
   const url = process.env["N8N_WEBHOOK_URL"];
   if (!url) return { ok: false as const, status: 0, error: "The campus backend is not configured yet." };
@@ -27,11 +38,15 @@ async function callN8n(body: Record<string, unknown>, token?: string) {
     let json: any = null;
     try {
       const parsed = JSON.parse(text);
-      json = Array.isArray(parsed) ? parsed[0] : parsed;
+      json = unwrap(parsed);
     } catch {
       /* plain text */
     }
+    devLog(body["action"], { status: res.status, tokenSent: !!token, keys: json && typeof json === "object" ? Object.keys(json) : "non-json" });
     if (!res.ok) {
+      if (res.status === 404 && /not registered/i.test(text)) {
+        return { ok: false as const, status: 404, error: "The campus server's n8n workflow is not active (webhook not registered). Activate the workflow in n8n.", json };
+      }
       const msg = statusMessage[res.status] ?? (res.status >= 500 ? statusMessage[500] : `The campus server responded with an error (${res.status}).`);
       return { ok: false as const, status: res.status, error: msg, json };
     }
@@ -39,15 +54,21 @@ async function callN8n(body: Record<string, unknown>, token?: string) {
       return { ok: false as const, status: Number(json.status) || 400, error: String(json.error ?? json.message ?? "Request failed."), json };
     }
     return { ok: true as const, status: res.status, json, text };
-  } catch {
+  } catch (e) {
+    devLog(body["action"], { category: "network", message: e instanceof Error ? e.message : String(e) });
     return { ok: false as const, status: 0, error: "Could not reach the campus server. Check your connection and retry." };
   }
 }
 
 function pickUser(j: any): CampusUser | null {
-  const u = j?.user ?? j?.data?.user ?? j?.data ?? j;
-  if (!u || typeof u !== "object" || u.id == null || !u.email) return null;
-  return { id: String(u.id), name: String(u.name ?? u.email), email: String(u.email), role: String(u.role ?? "student") };
+  const candidates = [j?.data?.user, j?.user, j?.data?.profile, j?.profile, j?.data, j];
+  for (const u of candidates) {
+    if (!u || typeof u !== "object") continue;
+    const id = u.id ?? u.student_id ?? u.studentId ?? u.user_id ?? u.userId;
+    if (id == null || String(id) === "" || !u.email) continue;
+    return { id: String(id), name: String(u.name ?? u.full_name ?? u.email), email: String(u.email), role: String(u.role ?? "student") };
+  }
+  return null;
 }
 
 export const loginRequest = createServerFn({ method: "POST" })
@@ -59,9 +80,11 @@ export const loginRequest = createServerFn({ method: "POST" })
       return { ok: false, status: r.status, error: r.error ?? "Request failed." };
     }
     const j = r.json;
-    const token = j?.token ?? j?.access_token ?? j?.accessToken ?? j?.data?.token ?? j?.data?.access_token;
-    if (typeof token !== "string" || token.split(".").length !== 3) {
-      return { ok: false, error: "Invalid email or password." };
+    const raw = j?.data?.token ?? j?.data?.access_token ?? j?.data?.accessToken ?? j?.token ?? j?.access_token ?? j?.accessToken;
+    const token = typeof raw === "string" ? raw.trim() : "";
+    devLog("login", { tokenPresent: !!token, userPresent: !!pickUser(j) });
+    if (!token) {
+      return { ok: false, status: 502, error: "Login was accepted, but the campus server did not return an access token (expected data.token)." };
     }
     const user = pickUser(j);
     return user ? { ok: true, token, user } : { ok: true, token, user: { id: "", name: "", email: data.email, role: "" } };
@@ -73,7 +96,8 @@ export const meRequest = createServerFn({ method: "POST" })
     const r = await callN8n({ action: "me" }, data.token);
     if (!r.ok) return { ok: false, status: r.status, error: r.error ?? "Request failed." };
     const user = pickUser(r.json);
-    return user ? { ok: true, user } : { ok: false, status: 401, error: "Could not verify your session." };
+    devLog("me", { userPresent: !!user });
+    return user ? { ok: true, user } : { ok: false, status: 502, error: "Account verification returned an unexpected response (no user id/email found)." };
   });
 
 export const askAssistant = createServerFn({ method: "POST" })
